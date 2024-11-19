@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+echo "Syncing Objects in the S3 bucket"
+
+set -e
+
+#Check for bucket name
+if [ -z "$1" ]
+then
+  echo "There needs to be a bucket name eg. ./bucket my-bucket-name"
+  exit 1
+fi
+
+BUCKET_NAME=$1
+#Check for file name
+if [ -z "$2" ]
+then
+  echo "There needs to be a file name prefix eg. ./bucket my-bucket-name my-filename-prefix"
+  exit 1
+fi
+
+
+BUCKET_NAME=$1
+
+FILENAME_PREFIX=$2
+
+
+OUTPUT_DIR="/tmp/s3-bash-scripts"
+
+rm -r -f $OUTPUT_DIR
+
+mkdir -p $OUTPUT_DIR
+
+NUM_FILES=$((RANDOM % 6 + 5))
+
+for ((i=1; i<NUM_FILES; i++)) do
+    FILENAME="$OUTPUT_DIR/${FILENAME_PREFIX}_$i.txt"
+    dd if=/dev/urandom of=$FILENAME bs=1024 count=$((RANDOM % 1024 + 1)) 2> /dev/null
+done
+
+tree $OUTPUT_DIR
+
+aws s3 sync $OUTPUT_DIR s3://$BUCKET_NAME/files
